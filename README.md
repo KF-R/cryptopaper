@@ -37,7 +37,7 @@ Designed with high-visbility at-a-glance updates in mind.  Intended for 2200x165
     
 - Badge, status
     
-    Version, local IP, contrast level, elapsed time if not yet six hours, main chart candle period, uptime
+    Version, local IP, contrast level, elapsed time if not yet six hours, uptime
 
 - LTC/BTC rate** will remain 'inverted' if below a preset threshold.
 <br/><br/>
