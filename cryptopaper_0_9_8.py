@@ -279,7 +279,7 @@ def pygame_loop(stop_event):
         display.fill(white)
         
         # Show weather
-        print_at(display, 1180, CHART_BOTTOM + 50, weather, 19)
+        print_at(display, 1172, CHART_BOTTOM + 46, weather, 19)
 
         # Show clock
         print_at(display, 0, 0, time.strftime(' %H:%M '), 192, True)
@@ -291,7 +291,7 @@ def pygame_loop(stop_event):
         elapsed = ''
         if(len(candles) < MAX_CANDLES): elapsed = hours_mins_secs( (len(candles)-1) * SECS_PER_CANDLE, False)
         print_at(display, WIN_W - 760, WIN_H - 192,
-            f"{VERSION}  {ip_addr}  {(white[0] - MIN_CONTRAST) // 20}  {elapsed}  Up:{hours_mins_secs(unix_minute() * 60, False)} ", 32, False, 2)
+            f"{VERSION}  {ip_addr}  {(white[0] - MIN_CONTRAST) // 20} {elapsed} Up:{hours_mins_secs(unix_minute() * 60, False)} ", 32, False, 2)
         
         # Show date
         today = datetime.date.today()
@@ -317,10 +317,13 @@ def pygame_loop(stop_event):
                 last_update_day = datetime.date.today()
                 orc_figures = fetch_orc_stats(ORC_DAYS, TIMEOUT * 2)
 
-            # Oncer per hour tasks
+            # Once per hour tasks
             if ( (last_update_hour != this_hour)):
                 last_update_hour = this_hour
                 weather = fetch_weather()
+
+            # Retry weather every minute if it's still empty
+            if weather.strip()=='': weather = fetch_weather()
 
         # Show BTC and LTC values
         if btc_usd_spot >= 100000: print_at(display, WIN_W, 0, f"${btc_usd_spot // 1000:,.0f}.{btc_usd_spot % 1000 // 100:.0f}K", 192, True, 2)
@@ -392,7 +395,7 @@ def pygame_loop(stop_event):
         draw_equipment_losses(display, 20, CHART_BOTTOM + 6)
 
         # Show badge
-        display_image(display, BADGE, 882, CHART_BOTTOM + 16, 0.6)
+        display_image(display, BADGE, 881, CHART_BOTTOM + 16, 0.6)
 
         pygame.display.flip()
         clock.tick(FPS)
