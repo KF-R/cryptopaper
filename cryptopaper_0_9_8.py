@@ -137,9 +137,11 @@ def fetch_orc_stats(numDays = 40, timeout = TIMEOUT):
 
 def fetch_weather(timeout = TIMEOUT):
     wttr_url = f"https://wttr.in/{LOCATION}?0FQAT"
-    with urllib.request.urlopen(wttr_url, timeout=60) as url:
-        data = url.read()
-    return data.decode()
+    try:
+        with urllib.request.urlopen(wttr_url, timeout=60) as url:
+            data = url.read()
+    except: return weather
+    return data.decode().replace(' °C', f'°  ({datetime.datetime.now().strftime("%H:%M")})')
 
 def fetch_bbc_news(headline_count=4, timeout=TIMEOUT):
     # Return headline_count headline strings from BBC news
@@ -322,9 +324,6 @@ def pygame_loop(stop_event):
                 last_update_hour = this_hour
                 weather = fetch_weather()
 
-            # Retry weather every minute if it's still empty
-            if weather.strip()=='': weather = fetch_weather()
-
         # Show BTC and LTC values
         if btc_usd_spot >= 100000: print_at(display, WIN_W, 0, f"${btc_usd_spot // 1000:,.0f}.{btc_usd_spot % 1000 // 100:.0f}K", 192, True, 2)
         else: print_at(display, WIN_W, 0, f"${btc_usd_spot:,.0f}", 192, True, 2)
@@ -420,6 +419,7 @@ if __name__ == "__main__":
         time.sleep(BTC_INTERVAL // 2)
     news = fetch_bbc_news(4)
     weather = fetch_weather()
+    last_update_hour = int(time.strftime('%H'))
     orc_figures = fetch_orc_stats(ORC_DAYS, TIMEOUT*2)
     notice(TITLE, 'Started')
     loop = asyncio.new_event_loop()
