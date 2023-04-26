@@ -12,15 +12,18 @@ FILENAME = os.path.basename(__file__).split('_')
 TITLE = FILENAME[0].capitalize()
 VERSION = f"v{(FILENAME[1])}.{(FILENAME[2])}.{(FILENAME[3]).replace('.py','')}"
 
-T_START, TIMEOUT, SECS_PER_CANDLE, FPS = int(time.time()) // 60, 0.5, 30, 30
-WIN_W, WIN_H, MIN_CONTRAST, CHART_TOP = 2200, 1650, 155, 450
-CHART_BOTTOM, CHART_COL_W, MAX_CANDLES, ORC_DAYS = WIN_H - 200, 16, 720, 40
-NL, BLACK, white = "\n", (0, 0, 0), (255, 255, 255) # white can be adjusted for contrast
+T_START, TIMEOUT, FPS = int(time.time()) // 60, 1.0, 30
+WIN_W, WIN_H = 2200, 1650
+CHART_TOP, CHART_BOTTOM = 450, 1450
+CHART_HEIGHT = CHART_BOTTOM - CHART_TOP
+CHART_COL_W, MAX_CANDLES, SECS_PER_CANDLE =  16, 720, 30
+NL, MIN_CONTRAST, BLACK, white = "\n", 155, (0, 0, 0), (255, 255, 255) # white can be adjusted for contrast
 VI_RADIUS, VI_RATIO = 100.0, 10 # Volatility indicator
 weather = ''
 
+ORC_DAYS = 40
 LTC_ALARM = 0.0040  # Below this ratio LTC display will be inverted
-LOCATION = 'Montreal' # For weather updates
+LOCATION = 'New_York' # For weather updates
 
 BADGE = pygame.image.load(os.path.join(LIBDIR,'tryzub-100.png'))
 
@@ -140,7 +143,10 @@ def fetch_weather(timeout = TIMEOUT):
         with urllib.request.urlopen(wttr_url, timeout=60) as url:
             data = url.read()
     except:
-        notice('WTTR TIMEOUT', f'::{data}::  Using: {weather}') 
+        notice('WTTR TIMEOUT', f'Using: {weather}') 
+        return weather
+    if '°' not in data.decode(): 
+        notice('WTTR EMPTY', f'Using: {weather}') 
         return weather
     return data.decode().replace(' °C', f'°  ({datetime.datetime.now().strftime("%H:%M")})')
 
@@ -257,6 +263,29 @@ def draw_equipment_losses(canvas, x, y, scale: float = 0.18):
         print_at(canvas, (offset + 20) - int(450 * scale) + 30, y + 1, f"{war_today_change[0][classification]}", 24)
     pygame.draw.rect(canvas, BLACK, pygame.Rect(x-4, y - 1, offset, 82), 3, 6)
 
+def draw_main_chart():
+    # Chart Frame
+    pygame.draw.rect(display, 0, pygame.Rect( 3, CHART_TOP - 10, WIN_W - 6, CHART_HEIGHT + 10), 6, 3 )
+
+    # Plot candles
+    plot_w = WIN_W // MAX_CANDLES # 3px
+    previous = CHART_HEIGHT - 1 # Bottom of chart
+    for i in range(len(candles)):
+        x = 8 + (i + 1 ) * plot_w
+        y = CHART_TOP + ( CHART_HEIGHT - fraction_of_range(candles[i], min(candles), max(candles), CHART_HEIGHT - 8) ) - 8
+        pygame.draw.circle(display, BLACK, (x, y), plot_w, 0)
+        # Draw a vertical line between jumps:
+        if (abs(y - previous) >= plot_w) and i > 0 and y < CHART_BOTTOM:
+            pygame.draw.line(display, BLACK, (x - plot_w, previous - 1), (x - 1, y - 1), plot_w)
+        # Draw vertical grid line every 120 candles
+        if (i % 120 == 0) and i > 0: pygame.draw.line(display, BLACK, ( x + 6, CHART_TOP ), ( x + 6, CHART_BOTTOM - 1), 1 )
+
+        previous = y
+
+    # Draw horizontal marker for current price visibility
+    pygame.draw.line(display, BLACK, (x, y - 1), (WIN_W - 8, y - 1), 1)
+
+
 # Pygame main loop
 def pygame_loop(stop_event):
     global news, candles, orc_figures, white, last_update_day, last_update_hour, weather
@@ -294,7 +323,7 @@ def pygame_loop(stop_event):
         pygame.draw.line(display, BLACK, ( (WIN_W//2) + start_x, WIN_H - VI_RADIUS + 2 + start_y ), ( (WIN_W//2) + end_x, WIN_H - VI_RADIUS + 2 + end_y ), 3)
 
         # Show status 
-        print_at(display, WIN_W - 692, WIN_H - 190, f"{VERSION} {ip_addr} {(white[0] - MIN_CONTRAST) // 20} Up:{hours_mins_secs(unix_minute() * 60, False)}", 28)
+        print_at(display, WIN_W - 692, WIN_H - 188, f"{VERSION} {ip_addr} {(white[0] - MIN_CONTRAST) // 20} Up:{hours_mins_secs(unix_minute() * 60, False)}", 28)
         
         # Show date
         today = datetime.date.today()
@@ -325,8 +354,10 @@ def pygame_loop(stop_event):
                 last_update_hour = this_hour
                 weather = fetch_weather()
 
+            if '°' not in weather: notice('WARNING',f'Weather missing.') 
+
         # Show headlines
-        news_size = 48
+        news_size = 46
         for i in range(len(news)):
             # Flashes (using boolean inverse argument) every other second if keyword found in headline
             print_at(display, -16, 224 + ((news_size+7)*i),
@@ -353,31 +384,16 @@ def pygame_loop(stop_event):
         if value > MIB_H - 20: value = MIB_H - 16
         pygame.draw.rect(display, 0, pygame.Rect(MIB_X+8, MIB_Y + (MIB_H - value) - (MIB_BAR_H * 2), MIB_W - 16, MIB_BAR_H), 0)
 
-        # Chart Frame
-        pygame.draw.rect(display, 0, pygame.Rect( 3, CHART_TOP-8, WIN_W-6, CHART_BOTTOM-CHART_TOP+8), 6, 3 )
 
-        # Plot candles
-        plot_w = min(4, max(1, WIN_W // MAX_CANDLES))
-        previous = CHART_BOTTOM-CHART_TOP # 1450 - 450
-        for i in range(len(candles)):
-            y = (CHART_BOTTOM - CHART_TOP) - fraction_of_range(candles[i], min(candles), max(candles), CHART_BOTTOM-CHART_TOP - 3) - 4
-            pygame.draw.circle(display, BLACK, ((i * plot_w)+11, int(y)+CHART_TOP), plot_w, 0)
-            # Draw a vertical line between jumps:
-            if(abs(y-previous) >= plot_w) and i > 0:
-                pygame.draw.line(display, BLACK, ((i * plot_w)+9, previous + CHART_TOP), ((i * plot_w)+9, int(y)+CHART_TOP), plot_w)
-            # Draw vertical grid line every 120 candles
-            if(i % 120 == 0): pygame.draw.line(display, BLACK, ( (i * plot_w)+9, CHART_TOP ), ( (i * plot_w)+9, CHART_BOTTOM - 1), 1 )
+        draw_main_chart()
 
-            previous = y
-
-        # Draw horizontal marker for current price visibility
-        pygame.draw.line(display, BLACK, ((i * plot_w) + 11, y + CHART_TOP), (WIN_W - 6, y + CHART_TOP), 1)
 
         # Show volatility indicator
         if (max(candles) - min(candles) <= 0): volatility = 0
         else: volatility = ((max(candles) - min(candles)) / max(candles)) * 100
-        pygame.draw.circle(display, 0, (WIN_W//2, WIN_H - VI_RADIUS + 2), VI_RADIUS, 5)
-        pygame.draw.circle(display, 0, (WIN_W//2, WIN_H - VI_RADIUS + 2), min(volatility * VI_RATIO, VI_RADIUS) )
+        VI_CENTER =  WIN_W//2, WIN_H - VI_RADIUS 
+        pygame.draw.circle(display, 0, VI_CENTER, VI_RADIUS, 5)
+        pygame.draw.circle(display, 0, VI_CENTER, min(volatility * VI_RATIO, VI_RADIUS) )
         print_at(display, WIN_W // 2 + VI_RADIUS - 16, WIN_H - 195, f"${max(candles) - min(candles):,.0f}", 36)
         print_at(display, WIN_W // 2 + VI_RADIUS - 12, WIN_H - 52, f"{volatility:,.2f}%", 48)
 
