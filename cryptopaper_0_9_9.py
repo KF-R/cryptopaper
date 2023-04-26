@@ -294,8 +294,7 @@ def pygame_loop(stop_event):
         pygame.draw.line(display, BLACK, ( (WIN_W//2) + start_x, WIN_H - VI_RADIUS + 2 + start_y ), ( (WIN_W//2) + end_x, WIN_H - VI_RADIUS + 2 + end_y ), 3)
 
         # Show status 
-        print_at(display, WIN_W - 692, WIN_H - 190,
-            f"{VERSION}  {ip_addr}  {(white[0] - MIN_CONTRAST) // 20}  Up:{hours_mins_secs(unix_minute() * 60, False)}", 28)
+        print_at(display, WIN_W - 692, WIN_H - 190, f"{VERSION} {ip_addr} {(white[0] - MIN_CONTRAST) // 20} Up:{hours_mins_secs(unix_minute() * 60, False)}", 28)
         
         # Show date
         today = datetime.date.today()
@@ -372,8 +371,7 @@ def pygame_loop(stop_event):
             previous = y
 
         # Draw horizontal marker for current price visibility
-        pygame.draw.line(display, BLACK, ((i * plot_w)+11, y+CHART_TOP),
-                            (WIN_W-6, y+CHART_TOP), 1)
+        pygame.draw.line(display, BLACK, ((i * plot_w) + 11, y + CHART_TOP), (WIN_W - 6, y + CHART_TOP), 1)
 
         # Show volatility indicator
         if (max(candles) - min(candles) <= 0): volatility = 0
