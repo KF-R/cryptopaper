@@ -35,9 +35,9 @@ Designed with high-visbility at-a-glance updates in mind.  Intended for 2200x165
  
     This is also where you'll find the digital clock's analogue second hand.
     
-- Badge, status
+- Status, LTC/USD
     
-    Version, local IP, contrast level, elapsed time if not yet six hours, uptime
+    Version, local IP, contrast level, uptime & LTC/USD
 
 - LTC/BTC rate** will remain 'inverted' if below a preset threshold.
 <br/><br/>
