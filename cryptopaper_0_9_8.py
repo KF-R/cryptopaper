@@ -140,7 +140,9 @@ def fetch_weather(timeout = TIMEOUT):
     try:
         with urllib.request.urlopen(wttr_url, timeout=60) as url:
             data = url.read()
-    except: return weather
+    except:
+        notice('WTTR TIMEOUT', f'\{{data}}  Using: {weather}') 
+        return weather
     return data.decode().replace(' °C', f'°  ({datetime.datetime.now().strftime("%H:%M")})')
 
 def fetch_bbc_news(headline_count=4, timeout=TIMEOUT):
