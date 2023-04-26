@@ -272,11 +272,11 @@ def draw_main_chart():
     previous = CHART_HEIGHT - 1 # Bottom of chart
     for i in range(len(candles)):
         x = 8 + (i + 1 ) * plot_w
-        y = CHART_TOP + ( CHART_HEIGHT - fraction_of_range(candles[i], min(candles), max(candles), CHART_HEIGHT - 8) ) - 8
+        y = CHART_TOP + ( CHART_HEIGHT - fraction_of_range(candles[i], min(candles), max(candles), CHART_HEIGHT - 8) ) - 9
         pygame.draw.circle(display, BLACK, (x, y), plot_w, 0)
         # Draw a vertical line between jumps:
         if (abs(y - previous) >= plot_w) and i > 0 and y < CHART_BOTTOM:
-            pygame.draw.line(display, BLACK, (x - plot_w, previous - 1), (x - 1, y - 1), plot_w)
+            pygame.draw.line(display, BLACK, (x - plot_w + 1, previous - 1), (x - 1, y - 1), plot_w)
         # Draw vertical grid line every 120 candles
         if (i % 120 == 0) and i > 0: pygame.draw.line(display, BLACK, ( x + 6, CHART_TOP ), ( x + 6, CHART_BOTTOM - 1), 1 )
 
@@ -285,6 +285,14 @@ def draw_main_chart():
     # Draw horizontal marker for current price visibility
     pygame.draw.line(display, BLACK, (x, y - 1), (WIN_W - 8, y - 1), 1)
 
+def draw_volatility_indicator():
+    if (max(candles) - min(candles) <= 0): volatility = 0
+    else: volatility = ((max(candles) - min(candles)) / max(candles)) * 100
+    VI_CENTER = WIN_W // 2, WIN_H - VI_RADIUS 
+    pygame.draw.circle(display, 0, VI_CENTER, VI_RADIUS, 5)
+    pygame.draw.circle(display, 0, VI_CENTER, min(volatility * VI_RATIO, VI_RADIUS) )
+    print_at(display, WIN_W // 2 + VI_RADIUS - 16, CHART_BOTTOM + 2, f"${max(candles) - min(candles):,.0f}", 36)
+    print_at(display, WIN_W // 2 + VI_RADIUS - 12, WIN_H - 54, f"{volatility:,.2f}%", 48)
 
 # Pygame main loop
 def pygame_loop(stop_event):
@@ -384,18 +392,11 @@ def pygame_loop(stop_event):
         if value > MIB_H - 20: value = MIB_H - 16
         pygame.draw.rect(display, 0, pygame.Rect(MIB_X+8, MIB_Y + (MIB_H - value) - (MIB_BAR_H * 2), MIB_W - 16, MIB_BAR_H), 0)
 
-
+        # Main chart
         draw_main_chart()
 
-
         # Show volatility indicator
-        if (max(candles) - min(candles) <= 0): volatility = 0
-        else: volatility = ((max(candles) - min(candles)) / max(candles)) * 100
-        VI_CENTER =  WIN_W//2, WIN_H - VI_RADIUS 
-        pygame.draw.circle(display, 0, VI_CENTER, VI_RADIUS, 5)
-        pygame.draw.circle(display, 0, VI_CENTER, min(volatility * VI_RATIO, VI_RADIUS) )
-        print_at(display, WIN_W // 2 + VI_RADIUS - 16, WIN_H - 195, f"${max(candles) - min(candles):,.0f}", 36)
-        print_at(display, WIN_W // 2 + VI_RADIUS - 12, WIN_H - 52, f"{volatility:,.2f}%", 48)
+        draw_volatility_indicator()
 
         # Show War Stats
         draw_chart(display, 16, CHART_BOTTOM + 94, orc_figures, CHART_COL_W)
