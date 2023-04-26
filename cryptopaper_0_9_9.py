@@ -359,9 +359,9 @@ def pygame_loop(stop_event):
 
         # Plot candles
         plot_w = min(4, max(1, WIN_W // MAX_CANDLES))
-        previous = CHART_BOTTOM-CHART_TOP
+        previous = CHART_BOTTOM-CHART_TOP # 1450 - 450
         for i in range(len(candles)):
-            y = (CHART_BOTTOM-CHART_TOP-1) - fraction_of_range(candles[i], min(candles), max(candles), CHART_BOTTOM-CHART_TOP - 3)
+            y = (CHART_BOTTOM - CHART_TOP) - fraction_of_range(candles[i], min(candles), max(candles), CHART_BOTTOM-CHART_TOP - 3) - 4
             pygame.draw.circle(display, BLACK, ((i * plot_w)+11, int(y)+CHART_TOP), plot_w, 0)
             # Draw a vertical line between jumps:
             if(abs(y-previous) >= plot_w) and i > 0:
