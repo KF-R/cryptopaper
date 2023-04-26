@@ -361,17 +361,13 @@ def pygame_loop(stop_event):
         plot_w = min(4, max(1, WIN_W // MAX_CANDLES))
         previous = CHART_BOTTOM-CHART_TOP
         for i in range(len(candles)):
-            y = (CHART_BOTTOM-CHART_TOP-1) - fraction_of_range(candles[i], min(
-                candles), max(candles), CHART_BOTTOM-CHART_TOP - 3)
+            y = (CHART_BOTTOM-CHART_TOP-1) - fraction_of_range(candles[i], min(candles), max(candles), CHART_BOTTOM-CHART_TOP - 3)
             pygame.draw.circle(display, BLACK, ((i * plot_w)+11, int(y)+CHART_TOP), plot_w, 0)
             # Draw a vertical line between jumps:
-            if(abs(y-previous) >= plot_w):
-                pygame.draw.line(display, BLACK, ((i * plot_w)+9, previous +
-                                                        CHART_TOP), ((i * plot_w)+9, int(y)+CHART_TOP), plot_w)
+            if(abs(y-previous) >= plot_w) and i > 0:
+                pygame.draw.line(display, BLACK, ((i * plot_w)+9, previous + CHART_TOP), ((i * plot_w)+9, int(y)+CHART_TOP), plot_w)
             # Draw vertical grid line every 120 candles
-            if(i % 120 == 0):
-                pygame.draw.line(display, BLACK, ((
-                    i * plot_w)+9, CHART_TOP), ((i * plot_w)+9, CHART_BOTTOM), 1)
+            if(i % 120 == 0): pygame.draw.line(display, BLACK, ( (i * plot_w)+9, CHART_TOP ), ( (i * plot_w)+9, CHART_BOTTOM - 1), 1 )
 
             previous = y
 
