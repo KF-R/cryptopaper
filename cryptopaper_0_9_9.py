@@ -140,7 +140,7 @@ def fetch_weather(timeout = TIMEOUT):
         with urllib.request.urlopen(wttr_url, timeout=60) as url:
             data = url.read()
     except:
-        notice('WTTR TIMEOUT', f'\{{data}}  Using: {weather}') 
+        notice('WTTR TIMEOUT', f'::{data}::  Using: {weather}') 
         return weather
     return data.decode().replace(' °C', f'°  ({datetime.datetime.now().strftime("%H:%M")})')
 
