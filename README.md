@@ -1,6 +1,5 @@
 ## cryptopaper  &nbsp;&nbsp;  :chart_with_upwards_trend: ![#StandWithUkraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraineFlat.svg) :newspaper:
-<img src="https://user-images.githubusercontent.com/6677966/233832158-7e42e4ac-bd03-4369-b225-5c6c31f826ad.png" width="50%" height="50%" align="right" />
-
+<img src="https://user-images.githubusercontent.com/6677966/234790110-400add24-bf82-4109-b8a9-505b3fcef9c7.png" width="50%" height="50%" align="right" />
 
 **A BTC/LTC/USD dashboard with scraped headlines, topical statistics and data from on-going global crises.**
 
@@ -25,7 +24,7 @@ Designed with high-visbility at-a-glance updates in mind.  Intended for 2200x165
     
     At a glance you can see whether BTC/USD is currently (relative to the six hour window) trending upwards or downards. It's a simplified high/low candle adapted for high visibility.
     
-<img src="https://user-images.githubusercontent.com/6677966/233561264-787c6f9b-b217-4bd5-b1ed-eb5739ab9676.png" width="25%" height="25%" align="right" />
+<img src="https://user-images.githubusercontent.com/6677966/233832158-7e42e4ac-bd03-4369-b225-5c6c31f826ad.png" width="25%" height="25%" align="right" />
 
 - Volatility Indicator
     
@@ -38,6 +37,8 @@ Designed with high-visbility at-a-glance updates in mind.  Intended for 2200x165
 - Status, LTC/USD
     
     Version, local IP, contrast level, uptime & LTC/USD
+    
+<img src="https://user-images.githubusercontent.com/6677966/233561264-787c6f9b-b217-4bd5-b1ed-eb5739ab9676.png" width="25%" height="25%" align="right" />
 
 - LTC/BTC rate** will remain 'inverted' if below a preset threshold.
 <br/><br/>
