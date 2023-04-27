@@ -13,12 +13,12 @@ TITLE = FILENAME[0].capitalize()
 VERSION = f"v{(FILENAME[1])}.{(FILENAME[2])}.{(FILENAME[3]).replace('.py','')}"
 
 T_START, TIMEOUT, FPS = int(time.time()) // 60, 1.0, 30
-WIN_W, WIN_H = 2200, 1650
-CHART_TOP, CHART_BOTTOM = 450, 1450
+WIN_W, WIN_H, CHART_TOP, CHART_BOTTOM = 2200, 1650, 450, 1450
 CHART_HEIGHT = CHART_BOTTOM - CHART_TOP
 CHART_COL_W, MAX_CANDLES, SECS_PER_CANDLE =  16, 720, 30
 NL, MIN_CONTRAST, BLACK, white = "\n", 155, (0, 0, 0), (255, 255, 255) # white can be adjusted for contrast
 VI_RADIUS, VI_RATIO = 100.0, 10 # Volatility indicator
+VI_CENTER = WIN_W // 2, WIN_H - VI_RADIUS 
 weather = ''
 
 ORC_DAYS = 40
@@ -143,7 +143,7 @@ def fetch_weather(timeout = TIMEOUT):
         with urllib.request.urlopen(wttr_url, timeout=60) as url:
             data = url.read()
     except:
-        notice('WTTR TIMEOUT', f'Using: {weather}') 
+        notice('WTTR TIMEOUT', f'Using: \n{weather}') 
         return weather
     if '°' not in data.decode(): 
         notice('WTTR EMPTY', f'Using: {weather}') 
@@ -218,10 +218,11 @@ def coords_from_angle(radius, angle):
     return radius * math.sin(angle_rad), radius * math.cos(angle_rad)
 
 def fraction_of_range(value, min_val, max_val, rate=100):
+    if value >= max_val: return rate
     if max_val <= min_val: return rate
     if value <= min_val: return 0
     result = (value - min_val) / (max_val - min_val)
-    return result * rate
+    return int(result * rate)
 
 def hours_mins_secs(seconds, return_seconds=True):
     h, m, s = seconds // 3600, seconds // 60 % 60, seconds % 60
@@ -273,12 +274,12 @@ def draw_main_chart():
     for i in range(len(candles)):
         x = 8 + (i + 1 ) * plot_w
         y = CHART_TOP + ( CHART_HEIGHT - fraction_of_range(candles[i], min(candles), max(candles), CHART_HEIGHT - 8) ) - 9
-        pygame.draw.circle(display, BLACK, (x, y), plot_w, 0)
+        pygame.draw.circle(display, BLACK, (x, y), plot_w - 1, 0)
         # Draw a vertical line between jumps:
         if (abs(y - previous) >= plot_w) and i > 0 and y < CHART_BOTTOM:
             pygame.draw.line(display, BLACK, (x - plot_w + 1, previous - 1), (x - 1, y - 1), plot_w)
         # Draw vertical grid line every 120 candles
-        if (i % 120 == 0) and i > 0: pygame.draw.line(display, BLACK, ( x + 6, CHART_TOP ), ( x + 6, CHART_BOTTOM - 1), 1 )
+        if (i % 120 == 0) and i > 0: pygame.draw.line(display, BLACK, ( x + 6, CHART_TOP - 6 ), ( x + 6, CHART_BOTTOM - 1), 1 )
 
         previous = y
 
@@ -288,11 +289,31 @@ def draw_main_chart():
 def draw_volatility_indicator():
     if (max(candles) - min(candles) <= 0): volatility = 0
     else: volatility = ((max(candles) - min(candles)) / max(candles)) * 100
-    VI_CENTER = WIN_W // 2, WIN_H - VI_RADIUS 
     pygame.draw.circle(display, 0, VI_CENTER, VI_RADIUS, 5)
     pygame.draw.circle(display, 0, VI_CENTER, min(volatility * VI_RATIO, VI_RADIUS) )
-    print_at(display, WIN_W // 2 + VI_RADIUS - 16, CHART_BOTTOM + 2, f"${max(candles) - min(candles):,.0f}", 36)
-    print_at(display, WIN_W // 2 + VI_RADIUS - 12, WIN_H - 54, f"{volatility:,.2f}%", 48)
+    print_at(display, VI_CENTER[0] + VI_RADIUS - 16, CHART_BOTTOM , f"${max(candles) - min(candles):,.0f}", 36)
+    print_at(display, VI_CENTER[0] + VI_RADIUS - 12, WIN_H - 54, f"{volatility:,.2f}%", 48)
+
+    # Movement Indicator Box
+    MIB_H, MIB_W, MIB_BAR_H = 180, 48, 6
+    MIB_X, MIB_Y = VI_CENTER[0] - 164, VI_CENTER[1] - (MIB_H // 2)
+    pygame.draw.rect(display, 0, pygame.Rect(MIB_X, MIB_Y, MIB_W, MIB_H), 6, 1)
+    value = fraction_of_range( btc_usd_spot, min(candles), max(candles), (MIB_H - 18) )
+    pygame.draw.rect(display, 0, pygame.Rect(MIB_X + 8, MIB_Y + (MIB_H - value) - (MIB_BAR_H * 2), MIB_W - 16, MIB_BAR_H), 0)
+
+    # Draw second hand for clock; white (not contrast-adaptive) if volatility indicator would otherwise obscure it.
+    (start_x, start_y) = coords_from_angle( int(VI_RADIUS * 0.6), int(time.strftime('%S')) * 6 )
+    (end_x, end_y) = coords_from_angle( int(VI_RADIUS * 1.0) - 8, int(time.strftime('%S')) * 6 )
+    pygame.draw.line(display, BLACK if volatility < 7 else (255,255,255), ( VI_CENTER[0] + start_x, VI_CENTER[1] + start_y ), ( VI_CENTER[0] + end_x, VI_CENTER[1] + end_y ), 3)
+
+def draw_war_stats():
+    draw_chart(display, 16, CHART_BOTTOM + 94, orc_figures, CHART_COL_W)
+    print_at(display, (ORC_DAYS * CHART_COL_W) + 36, CHART_BOTTOM + 110, f"{orc_figures[-1]:,.0f}", 60)
+    print_at(display, (ORC_DAYS * CHART_COL_W) + 36, CHART_BOTTOM + 95, f"High: {max(orc_figures):,.0f}", 16)
+    print_at(display, (ORC_DAYS * CHART_COL_W) + 48, CHART_BOTTOM + 175, f"Low: {min(orc_figures):,.0f}", 16)
+    print_at(display, (ORC_DAYS * CHART_COL_W) + 190, CHART_BOTTOM + 136, f"{war_day}", 48)
+    print_at(display, (ORC_DAYS * CHART_COL_W) + 200, CHART_BOTTOM + 92, "Day", 36)
+    draw_equipment_losses(display, 20, CHART_BOTTOM + 6)
 
 # Pygame main loop
 def pygame_loop(stop_event):
@@ -326,12 +347,9 @@ def pygame_loop(stop_event):
 
         # Show clock
         print_at(display, 0, 0, time.strftime(' %H:%M '), 192, True)
-        (start_x, start_y) = coords_from_angle( int(VI_RADIUS * 0.6), int(time.strftime('%S')) * 6 )
-        (end_x, end_y) = coords_from_angle( int(VI_RADIUS * 1.0)-8, int(time.strftime('%S')) * 6 )
-        pygame.draw.line(display, BLACK, ( (WIN_W//2) + start_x, WIN_H - VI_RADIUS + 2 + start_y ), ( (WIN_W//2) + end_x, WIN_H - VI_RADIUS + 2 + end_y ), 3)
 
         # Show status 
-        print_at(display, WIN_W - 692, WIN_H - 188, f"{VERSION} {ip_addr} {(white[0] - MIN_CONTRAST) // 20} Up:{hours_mins_secs(unix_minute() * 60, False)}", 28)
+        print_at(display, WIN_W - 692, WIN_H - 189, f"{VERSION} {ip_addr} { (str((white[0] - MIN_CONTRAST) // 20) + ' ').replace('5 ','')}Up:{hours_mins_secs(unix_minute() * 60, False)}", 28)
         
         # Show date
         today = datetime.date.today()
@@ -383,15 +401,6 @@ def pygame_loop(stop_event):
         pygame.draw.rect(display, BLACK, (WIN_W - 162, CHART_BOTTOM + 48, 162, 4))
         print_at(display, WIN_W, CHART_BOTTOM + 8, f"${(ltc_btc_rate * btc_usd_spot):.2f}".rjust(8) + ' ', 34, True, 2) # LTC USD
 
-        # Movement Indicator Box
-        MIB_H, MIB_W, MIB_BAR_H = 180, 48, 6
-        MIB_X = (WIN_W // 2) - 164
-        MIB_Y = WIN_H - MIB_H - MIB_BAR_H
-        pygame.draw.rect(display, 0, pygame.Rect(MIB_X, MIB_Y, MIB_W, MIB_H), 6, 1)
-        value = int(fraction_of_range(btc_usd_spot, min(candles), max(candles), MIB_H - 20))
-        if value > MIB_H - 20: value = MIB_H - 16
-        pygame.draw.rect(display, 0, pygame.Rect(MIB_X+8, MIB_Y + (MIB_H - value) - (MIB_BAR_H * 2), MIB_W - 16, MIB_BAR_H), 0)
-
         # Main chart
         draw_main_chart()
 
@@ -399,14 +408,7 @@ def pygame_loop(stop_event):
         draw_volatility_indicator()
 
         # Show War Stats
-        draw_chart(display, 16, CHART_BOTTOM + 94, orc_figures, CHART_COL_W)
-        print_at(display, (ORC_DAYS * CHART_COL_W) + 36, CHART_BOTTOM + 110, f"{orc_figures[-1]:,.0f}", 60)
-        print_at(display, (ORC_DAYS * CHART_COL_W) + 36, CHART_BOTTOM + 95, f"High: {max(orc_figures):,.0f}", 16)
-        print_at(display, (ORC_DAYS * CHART_COL_W) + 48, CHART_BOTTOM + 175, f"Low: {min(orc_figures):,.0f}", 16)
-        print_at(display, (ORC_DAYS * CHART_COL_W) + 190, CHART_BOTTOM + 136, f"{war_day}", 48)
-        print_at(display, (ORC_DAYS * CHART_COL_W) + 200, CHART_BOTTOM + 92, "Day", 36)
-        # Show equipment losses
-        draw_equipment_losses(display, 20, CHART_BOTTOM + 6)
+        draw_war_stats()
 
         # Show badge
         display_image(display, BADGE, 881, CHART_BOTTOM + 16, 0.6)
