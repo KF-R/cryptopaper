@@ -4,7 +4,7 @@
 **A BTC/LTC/USD dashboard with scraped headlines, topical statistics and data from on-going global crises.**
 
 
-Designed with high-visbility at-a-glance updates in mind.  Intended for 2200x1650 e-paper devices such as the Boox Mira.  Well suited to low power instrumentation.
+Designed with high-visibility and at-a-glance updates in mind.  Intended for 2200x1650 e-paper devices such as the Boox Mira.  Well suited to low power instrumentation.
 
 
 **&lt;UP&gt;** and **&lt;DOWN&gt;** keys will adjust contrast
