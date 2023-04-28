@@ -36,7 +36,7 @@ Designed with high-visibility and at-a-glance updates in mind.  Intended for 220
     
 - Status, LTC/USD
     
-    Version, local IP, contrast level, uptime & LTC/USD
+    local IP, contrast level (if not default), uptime & LTC/USD
     
 <img src="https://user-images.githubusercontent.com/6677966/233561264-787c6f9b-b217-4bd5-b1ed-eb5739ab9676.png" width="25%" height="25%" align="right" />
 
