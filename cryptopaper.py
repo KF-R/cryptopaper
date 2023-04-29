@@ -344,7 +344,8 @@ def pygame_loop(stop_event):
 
         # Show status 
         print_at(display, WIN_W, CHART_BOTTOM + 9, f"{f'[{LOCATION}]' if any(char in string.digits for char in LOCATION) else LOCATION}   {ip_addr}  {(str((white[0] - MIN_CONTRAST) // 20) + '  ').replace('5 ','')}Up: {hours_mins_secs(unix_minute() * 60, False)}  ", 24, False, 2)
-        
+        print_at(display, 1392, WIN_H - 18, VERSION, 14)
+
         # Show date
         today = datetime.date.today()
         print_at(display, WIN_W // 2, 14, today.strftime('%a') + ' ' + ord_strftime('{S}', today), 98, False, 1)
