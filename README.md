@@ -36,7 +36,7 @@ Designed with high-visibility and at-a-glance updates in mind.  Intended for 220
 
 - Weather, Status, LTC/USD
     
-    Locale (for weather), local IP, contrast level (if not default), uptime & LTC/USD
+    Current weather, Configured locale, local IP, contrast level (if not default), uptime & LTC/USD
     
 <img src="https://user-images.githubusercontent.com/6677966/233561264-787c6f9b-b217-4bd5-b1ed-eb5739ab9676.png" width="25%" height="25%" align="right" />
 
@@ -47,3 +47,34 @@ Designed with high-visibility and at-a-glance updates in mind.  Intended for 220
 
 \** _Chart will need six hours from launch to fill with data as no files are written to or saved at any point._
 
+---
+
+### Customizations:
+
+- Watch Words
+
+    <b>lib/watch-words.txt</b> contains an editable list of newline-separated search strings.
+    
+    Any headline containing any of these strings will flash (toggling inverted status every other second).
+    
+- Options
+
+    <b>lib/options.txt</b> contains two editable values; one for LTC/BTC threshold and one for the weather search string i.e. your location.
+    
+    Below the LTC/BTC threshold specified in this file, the LTC/BTC indicator will be inverted (white on black).
+    The weather locale is fed to the most excellent [wttr.in](https://github.com/chubin/wttr.in) so location strings valid there should work here.
+    
+- Versatile Data Chart
+
+    Currently the data is pulled from the [2022-Ukraine-Russia-War-Dataset](https://github.com/PetroIvaniuk/2022-Ukraine-Russia-War-Dataset).
+    The plan is to abstract this into a plug-in module so it's more... versatile.
+    
+---
+
+### Notes:
+
+&nbsp;&nbsp;&nbsp;&nbsp;This little project was never intended for public consumption, but I found it so useful that it kept getting hacked into a slightly better version until eventually it felt like something I should share. Maybe someone will want to tweak the files and run it on a Pi with a nice e-paper display like I do; maybe I've saved someone ten minutes because they can pinch some code or ideas.  In any case, enjoy.  
+&nbsp;&nbsp;&nbsp;&nbsp;Oh, and Slava Ukraini.
+    
+    
+  
