@@ -8,7 +8,7 @@ import datetime, time, math, socket, urllib, string, io
 from bs4 import BeautifulSoup
  
 LIBDIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
-TITLE, VERSION = 'Cryptopaper', 'v1.0.0'
+TITLE, VERSION = 'Cryptopaper', 'v1.0.1'
 
 WIN_W, WIN_H, CHART_TOP, CHART_BOTTOM = 2200, 1650, 450, 1450
 CHART_HEIGHT = CHART_BOTTOM - CHART_TOP
@@ -301,9 +301,9 @@ def draw_volatility_indicator():
 
 def draw_war_stats():
     draw_chart(display, 16, CHART_BOTTOM + 94, orc_figures, CHART_COL_W)
-    print_at(display, (WAR_DAYS * CHART_COL_W) + 34, CHART_BOTTOM + 118, f"{orc_figures[-1]:,.0f}", 60)
-    print_at(display, (WAR_DAYS * CHART_COL_W) + 36, CHART_BOTTOM + 98, f"High: {max(orc_figures):,.0f}", 16)
-    print_at(display, (WAR_DAYS * CHART_COL_W) + 46, CHART_BOTTOM + 176, f"Low: {min(orc_figures):,.0f}", 16)
+    print_at(display, (WAR_DAYS * CHART_COL_W) + 34, CHART_BOTTOM + 118, f"{orc_figures[-1]}", 60)
+    print_at(display, (WAR_DAYS * CHART_COL_W) + 36, CHART_BOTTOM + 98, f"High: {max(orc_figures)}", 16)
+    print_at(display, (WAR_DAYS * CHART_COL_W) + 46, CHART_BOTTOM + 176, f"Low: {min(orc_figures)}", 16)
     print_at(display, (WAR_DAYS * CHART_COL_W) + 190, CHART_BOTTOM + 142, f"{war_day}", 48)
     print_at(display, (WAR_DAYS * CHART_COL_W) + 200, CHART_BOTTOM + 98, "Day", 36)
     draw_equipment_losses(display, 20, CHART_BOTTOM + 6)
@@ -364,23 +364,24 @@ def pygame_loop(stop_event):
             previous_minute = unix_minute()
             news = fetch_bbc_news(4, 1.0)
 
-            # New stats are usually posted around midday so should most likely be there by 14:00 
-            if ( (last_update_day != today) and (datetime.datetime.now().time() > datetime.time(14, 0, 0)) ): 
+            # New stats are usually posted around midday so should most likely be there by 14:05 
+            if ( (last_update_day != today) and (datetime.datetime.now().time() > datetime.time(14, 5, 0)) ): 
                 last_update_day = datetime.date.today()
                 orc_figures = fetch_orc_stats(WAR_DAYS, TIMEOUT * 2)
 
             # Once per hour tasks
             if ( (last_update_hour != this_hour)):
-                last_update_hour = this_hour
-                weather = fetch_weather(2.0)
+                if datetime.time.minute > 1: # Skip a minute for news fetch
+                    last_update_hour = this_hour
+                    weather = fetch_weather(1.0)
 
             if '°' not in weather: notice('WARNING',f'Weather missing.') 
 
         # Show headlines
-        news_size = 48
+        news_size = 49
         for i in range(len(news)):
             # Flashes (using boolean inverse argument) every other second if keyword found in headline
-            print_at(display, -16, 223 + ((news_size + 8) * i),
+            print_at(display, -16, 223 + ((news_size + 7) * i),
                         ' ' + news[i] + ' ', news_size, any(kw.lower() in news[i].lower(
                         ) for kw in WATCH_LIST) and (int(time.time()) % 2 == 0))
 
@@ -428,7 +429,7 @@ if __name__ == "__main__":
     except:
         notice('NOTICE',"Options are defaulting. \nYou are seeing this notice because there's a problem with your " + (os.path.join(LIBDIR,'options.txt')) + " file. \nTo set your options, ensure that it exists, is readable and has some newline-separated values for LTC threshold and location.")
         LTC_ALARM = 0.0040  # Below this ratio LTC display will be inverted
-        LOCATION = 'New_York' # For weather updates
+        LOCATION = 'New York' # For weather updates
 
     # Load watch words. Ignore any words containing non-printable characters  
     try: WATCH_LIST = [line.strip() for line in open(os.path.join(LIBDIR, 'watch-words.txt')) if all(char in string.printable for char in line)]
