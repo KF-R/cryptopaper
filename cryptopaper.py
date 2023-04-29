@@ -8,7 +8,7 @@ import datetime, time, math, socket, urllib, string, io
 from bs4 import BeautifulSoup
  
 LIBDIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
-TITLE, VERSION = 'Cryptopaper', 'v1.0.2'
+TITLE, VERSION = 'Cryptopaper', 'v1.0.3'
 
 WIN_W, WIN_H, CHART_TOP, CHART_BOTTOM = 2200, 1650, 450, 1450
 CHART_HEIGHT = CHART_BOTTOM - CHART_TOP
@@ -372,7 +372,7 @@ def pygame_loop(stop_event):
 
             # Once per hour tasks
             if ( (last_update_hour != this_hour)):
-                if datetime.time.minute > 1: # Skip a minute for news fetch
+                if datetime.datetime.now().minute > 1: # Skip a minute for news fetch
                     last_update_hour = this_hour
                     weather = fetch_weather(1.0)
 
