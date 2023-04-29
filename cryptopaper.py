@@ -8,7 +8,7 @@ import datetime, time, math, socket, urllib, string, io
 from bs4 import BeautifulSoup
  
 LIBDIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
-TITLE, VERSION = 'Cryptopaper', 'v1.0.1'
+TITLE, VERSION = 'Cryptopaper', 'v1.0.2'
 
 WIN_W, WIN_H, CHART_TOP, CHART_BOTTOM = 2200, 1650, 450, 1450
 CHART_HEIGHT = CHART_BOTTOM - CHART_TOP
@@ -138,7 +138,7 @@ def fetch_weather(timeout = TIMEOUT):
         return weather
     result = data.decode()
     if '°' not in result: 
-        notice('WTTR EMPTY', f'Using: {weather}') 
+        notice('WTTR EMPTY', f'Using: {NL + weather}') 
         return weather
     result = result.replace('\u2196','\u02f9').replace('\u2197','\u02fa').replace('\u2198','\u02fc').replace('\u2199','\u02fb') # Font shortcomings
     return result + ' ' * 16 + f'({datetime.datetime.now().strftime("%H:%M")})'
@@ -348,8 +348,8 @@ def pygame_loop(stop_event):
 
         # Show date
         today = datetime.date.today()
-        print_at(display, WIN_W // 2, 14, today.strftime('%a') + ' ' + ord_strftime('{S}', today), 98, False, 1)
-        print_at(display, WIN_W // 2, 120, today.strftime('%b \'%y'), 90, False, 1)
+        print_at(display, WIN_W // 2, 22, today.strftime('%a') + ' ' + ord_strftime('{S}', today), 102, False, 1)
+        print_at(display, WIN_W // 2, 122, today.strftime('%b \'%y'), 90, False, 1)
         pygame.draw.rect(display, BLACK, pygame.Rect(0, 215, WIN_W, 8))
 
         # Get spot price every candle
@@ -379,10 +379,10 @@ def pygame_loop(stop_event):
             if '°' not in weather: notice('WARNING',f'Weather missing.') 
 
         # Show headlines
-        news_size = 49
+        news_size = 52
         for i in range(len(news)):
             # Flashes (using boolean inverse argument) every other second if keyword found in headline
-            print_at(display, -16, 223 + ((news_size + 7) * i),
+            print_at(display, -16, 226 + ((news_size + 1) * i),
                         ' ' + news[i] + ' ', news_size, any(kw.lower() in news[i].lower(
                         ) for kw in WATCH_LIST) and (int(time.time()) % 2 == 0))
 
@@ -390,6 +390,7 @@ def pygame_loop(stop_event):
         if btc_usd_spot >= 100000: print_at(display, WIN_W, 12, f"${btc_usd_spot // 1000:,.0f}.{btc_usd_spot % 1000 // 100:.0f}K", 204, True, 2)
         else: print_at(display, WIN_W, 12, f"${btc_usd_spot:,.0f}", 204, True, 2)
 
+        pygame.draw.rect(display, white, pygame.Rect(WIN_W - 506, 226, 520, WIN_H - CHART_TOP))
         print_at(display, WIN_W, 227, f"H:${max(candles):,.0f}", 102, False, 2)  # BTC High
         print_at(display, WIN_W, 343, f"L:${min(candles):,.0f}", 102, False, 2)  # BTC Low
 
