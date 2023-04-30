@@ -1,5 +1,5 @@
 ## cryptopaper  &nbsp;&nbsp;  :chart_with_upwards_trend: ![#StandWithUkraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/badges/StandWithUkraineFlat.svg) :newspaper:
-<img src="https://user-images.githubusercontent.com/6677966/234790110-400add24-bf82-4109-b8a9-505b3fcef9c7.png" width="50%" height="50%" align="right" />
+<img src="https://user-images.githubusercontent.com/6677966/235366423-d989484c-08c7-4d56-8ca0-e36e3fbf1434.png" width="50%" height="50%" align="right" />
 
 **A BTC/LTC/USD dashboard with scraped headlines, topical statistics and data from on-going global crises.**
 
@@ -23,8 +23,8 @@ Designed with high-visibility and at-a-glance updates in mind.  Intended for 220
 - Movement Indicator
     
     At a glance you can see whether BTC/USD is currently (relative to the six hour window) trending upwards or downards. It's a simplified high/low candle adapted for high visibility.
-    
-<img src="https://user-images.githubusercontent.com/6677966/233832158-7e42e4ac-bd03-4369-b225-5c6c31f826ad.png" width="25%" height="25%" align="right" />
+
+<img src="https://user-images.githubusercontent.com/6677966/234790110-400add24-bf82-4109-b8a9-505b3fcef9c7.png" width="20%" height="20%" align="right" />
 
 - Volatility Indicator
     
@@ -38,7 +38,7 @@ Designed with high-visibility and at-a-glance updates in mind.  Intended for 220
     
     Current weather, Configured locale, local IP, contrast level (if not default), uptime & LTC/USD
     
-<img src="https://user-images.githubusercontent.com/6677966/233561264-787c6f9b-b217-4bd5-b1ed-eb5739ab9676.png" width="25%" height="25%" align="right" />
+<img src="https://user-images.githubusercontent.com/6677966/233832158-7e42e4ac-bd03-4369-b225-5c6c31f826ad.png" width="20%" height="20%" align="right" />
 
 - LTC/BTC rate** will remain 'inverted' if below a preset threshold.
 <br/><br/>
@@ -70,6 +70,8 @@ Designed with high-visibility and at-a-glance updates in mind.  Intended for 220
     The plan is to abstract this into a plug-in module so it's more... versatile.
     
 ---
+
+<img src="https://user-images.githubusercontent.com/6677966/233561264-787c6f9b-b217-4bd5-b1ed-eb5739ab9676.png" width="20%" height="20%" align="right" />
 
 ### Notes:
 
