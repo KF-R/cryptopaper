@@ -4,11 +4,11 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame, asyncio, aiohttp, json, threading
 from aiohttp import ClientTimeout
-import datetime, time, math, socket, urllib, string, io
+import datetime, time, math, socket, urllib, string, io, sys
 from bs4 import BeautifulSoup
  
 LIBDIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
-TITLE, VERSION = 'Cryptopaper', 'v1.0.4'
+TITLE, VERSION = 'Cryptopaper', 'v1.0.5'
 
 WIN_W, WIN_H, CHART_TOP, CHART_BOTTOM = 2200, 1650, 450, 1450
 CHART_HEIGHT = CHART_BOTTOM - CHART_TOP
@@ -20,6 +20,7 @@ T_START, TIMEOUT, FPS = int(time.time()) // 60, 1.0, 30
 candles, news, font_cache, ip_addr, weather, btc_usd_spot, ltc_btc_rate = [], [], {}, '', '', 0, 0
 
 BADGE = pygame.image.load(os.path.join(LIBDIR,'tryzub-100.png'))
+FONT_PATH = os.path.join(LIBDIR,"Code New Roman.otf")
 
 WAR_DAYS, WAR_KIT = 40, ['tank', 'apv', 'arty', 'mlrs', 'aa', 'jet', 'helo', 'drone', 'missile', 'truck']
 KEY_MAP = {'APC': 'apv', 'field artillery': 'arty', 'MRL': 'mlrs', 'anti-aircraft warfare': 'aa', 'aircraft': 'jet', 'helicopter': 'helo', 'cruise missiles': 'missile', 'vehicles and fuel tanks': 'truck'}
@@ -29,11 +30,16 @@ last_update_day, last_update_hour = datetime.date.today(), 0
 
 BTC_INTERVAL, LTC_INTERVAL = 30, 60
 
+try:
+    RESCALE_RESOLUTION = (int(sys.argv[1]), (int(sys.argv[1]) // 4) * 3)
+    if RESCALE_RESOLUTION[0] < 800: RESCALE_RESOLUTION = (800, 600) # WS-103 has width 1872 
+except: RESCALE_RESOLUTION = (WIN_W, WIN_H)
+
 pygame.init()
-FONT_PATH = os.path.join(LIBDIR,"Code New Roman.otf")
-display = pygame.display.set_mode( (WIN_W, WIN_H), pygame.NOFRAME | pygame.DOUBLEBUF | pygame.HWSURFACE, 8 )
+rendered_display = pygame.display.set_mode( RESCALE_RESOLUTION, pygame.NOFRAME | pygame.DOUBLEBUF | pygame.HWSURFACE, 8 )
 pygame.display.set_caption(TITLE + ' ' + VERSION)
 clock = pygame.time.Clock()
+display = pygame.Surface((WIN_W, WIN_H))
 
 # Async functions
 def cancel_tasks_and_stop_loop(loop, tasks):
@@ -406,7 +412,13 @@ def pygame_loop(stop_event):
         # Show badge
         display_image(display, BADGE, 881, CHART_BOTTOM + 16, 0.6)
 
+        # Render scaled frame
+        if(RESCALE_RESOLUTION != (WIN_W, WIN_H)): 
+            rescaled_display = pygame.transform.smoothscale(display, RESCALE_RESOLUTION)
+            rendered_display.blit(rescaled_display, (0, 0))
+        else: rendered_display.blit(display, (0, 0))
         pygame.display.flip()
+
         clock.tick(FPS)
 
     stop_event.set()
@@ -443,6 +455,9 @@ if __name__ == "__main__":
     weather = fetch_weather()
     last_update_hour = int(time.strftime('%H'))
     orc_figures = fetch_orc_stats(WAR_DAYS, TIMEOUT*2)
+    
+    if RESCALE_RESOLUTION != (WIN_W, WIN_H): notice('Rescaling',str(RESCALE_RESOLUTION))
+    
     notice(TITLE, 'Started')
     loop = asyncio.new_event_loop()
     stop_event = threading.Event()
