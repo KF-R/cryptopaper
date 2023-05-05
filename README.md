@@ -49,6 +49,23 @@ Designed with high-visibility and at-a-glance updates in mind.  Intended for 220
 
 ---
 
+### Installation:
+
+    git clone https://github.com/KF-R/cryptopaper
+    cd cryptopaper
+    pip install -r requirements.txt
+
+Optionally, if you would like to run it directly on linux or macs:
+
+    mv cryptopaper.py cryptopaper
+    chmod +x cryptopaper
+
+Now you can run it from the command line with ```./cryptopaper```.
+
+I don't know why I feel the need to mention any of this.  You're here, after all.
+
+---
+
 ### Customizations:
 
 - Watch Words
@@ -63,7 +80,18 @@ Designed with high-visibility and at-a-glance updates in mind.  Intended for 220
     
     Below the LTC/BTC threshold specified in this file, the LTC/BTC indicator will be inverted (white on black).
     The weather locale is fed to the most excellent [wttr.in](https://github.com/chubin/wttr.in) so location strings valid there should work here.
+
+- Resolution
+
+    As of v1.0.5, any 4:3 resolution is supported through smooth rescaling, which may degrade performance on low powered platforms. Anything from a Pi 4 upwards should be fine.
+    In order to use the custom resolutions, simply pass the desired width in pixels as an integer argument:
     
+    ```python3 cryptopaper.py 1200```
+    
+    or
+    
+    ```./cryptopaper 1872```
+
 - Versatile Data Chart
 
     Currently the data is pulled from the [2022-Ukraine-Russia-War-Dataset](https://github.com/PetroIvaniuk/2022-Ukraine-Russia-War-Dataset).
