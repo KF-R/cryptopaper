@@ -8,7 +8,7 @@ import datetime, time, math, socket, urllib, string, io
 from bs4 import BeautifulSoup
  
 LIBDIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
-TITLE, VERSION = 'Cryptopaper', 'v1.0.3'
+TITLE, VERSION = 'Cryptopaper', 'v1.0.4'
 
 WIN_W, WIN_H, CHART_TOP, CHART_BOTTOM = 2200, 1650, 450, 1450
 CHART_HEIGHT = CHART_BOTTOM - CHART_TOP
@@ -201,7 +201,7 @@ def ip_address():
             ("8.8.8.8", 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) + ["(No IP)"])[0])
     except:
         ip = "(IP Timeout)"
-    return (ip)
+    return ip
 
 def unix_minute(): return (int(time.time())//60) - T_START
 
@@ -211,21 +211,17 @@ def coords_from_angle(radius, angle):
     return radius * math.sin(angle_rad), radius * math.cos(angle_rad)
 
 def fraction_of_range(value, min_val, max_val, rate=100):
-    if value >= max_val: return rate
     if max_val <= min_val: return rate
-    if value <= min_val: return 0
-    result = (value - min_val) / (max_val - min_val)
-    return int(result * rate)
+    value = min(max_val, max(min_val, value))
+    return int(((value - min_val) / (max_val - min_val)) * rate)
 
-def hours_mins_secs(seconds, return_seconds=True):
-    h, m, s = seconds // 3600, seconds // 60 % 60, seconds % 60
-    result = f"{h}h{m:02}m"
-    return result + f"{s:02}s" if return_seconds else result
+def dhm(seconds):
+    days, hrs, mins = seconds // 86400, (seconds // 3600) % 24, (seconds // 60) % 60
+    return f"{hrs}h{mins:02}m" if days < 1 else f"{days}d{hrs:02}h{mins:02}m" 
 
 def ord_strftime(fmt, date_obj):
     ordinal_suffix = lambda n: "th" if 4 <= abs(n) % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(abs(n) % 10, "th")
-    formatted_date = date_obj.strftime(fmt).replace('{S}', str(date_obj.day) + ordinal_suffix(date_obj.day))
-    return formatted_date
+    return date_obj.strftime(fmt).replace('{S}', str(date_obj.day) + ordinal_suffix(date_obj.day))
 
 def display_image(canvas, image, x, y, rescale_factor: float = 1.0):
     if rescale_factor != 1.0:
@@ -305,7 +301,7 @@ def draw_war_stats():
     print_at(display, (WAR_DAYS * CHART_COL_W) + 36, CHART_BOTTOM + 98, f"High: {max(orc_figures)}", 16)
     print_at(display, (WAR_DAYS * CHART_COL_W) + 46, CHART_BOTTOM + 176, f"Low: {min(orc_figures)}", 16)
     print_at(display, (WAR_DAYS * CHART_COL_W) + 190, CHART_BOTTOM + 142, f"{war_day}", 48)
-    print_at(display, (WAR_DAYS * CHART_COL_W) + 200, CHART_BOTTOM + 98, "Day", 36)
+    print_at(display, (WAR_DAYS * CHART_COL_W) + 200, CHART_BOTTOM + 102, "Day", 36)
     draw_equipment_losses(display, 20, CHART_BOTTOM + 6)
 
 # Pygame main loop
@@ -343,8 +339,8 @@ def pygame_loop(stop_event):
         print_at(display, 0, 12, time.strftime(' %H:%M '), 204, True)
 
         # Show status 
-        print_at(display, WIN_W, CHART_BOTTOM + 9, f"{f'[{LOCATION}]' if any(char in string.digits for char in LOCATION) else LOCATION}   {ip_addr}  {(str((white[0] - MIN_CONTRAST) // 20) + '  ').replace('5 ','')}Up: {hours_mins_secs(unix_minute() * 60, False)}  ", 24, False, 2)
-        print_at(display, 1392, WIN_H - 18, VERSION, 14)
+        print_at(display, WIN_W, CHART_BOTTOM + 9, f"{f'[{LOCATION}]' if any(char in string.digits for char in LOCATION) else LOCATION}   {ip_addr}  {(str((white[0] - MIN_CONTRAST) // 20) + '  ').replace('5 ','')}Up: {dhm(unix_minute() * 60)}  ", 24, False, 2)
+        print_at(display, 1366, WIN_H - 16, VERSION, 16)
 
         # Show date
         today = datetime.date.today()
@@ -372,7 +368,7 @@ def pygame_loop(stop_event):
 
             # Once per hour tasks
             if ( (last_update_hour != this_hour)):
-                if datetime.datetime.now().minute > 1: # Skip a minute for news fetch
+                if datetime.datetime.now().minute > 30: # Runs halfway through the hour
                     last_update_hour = this_hour
                     weather = fetch_weather(1.0)
 
