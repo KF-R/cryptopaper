@@ -123,7 +123,7 @@ def stream():
             setInterval(refreshImage, 1000);
         </script>
     </head>
-    <body style = "padding: 0px; margin: 0px;">
+    <body style = "padding: 0px; margin: 0px; background-color: #000;">
         <img id="screenshot" src="/screenshot" alt="Screenshot">
     </body>
     </html>
