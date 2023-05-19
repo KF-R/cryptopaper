@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{status}}</title>
+    <script>
+        async function loadWatchWords() {
+            const response = await fetch('/load_watch_words');
+            const data = await response.json();
+
+            if (data.error) {
+                document.getElementById('message').innerText = data.error;
+            } else {
+                document.getElementById('watch_words').value = data.data;
+            }
+        }
+
+        async function loadOptions() {
+            const response = await fetch('/load_options');
+            const data = await response.json();
+
+            if (data.error) {
+                document.getElementById('message').innerText = data.error;
+            } else {
+                document.getElementById('location').value = data.location;
+                document.getElementById('threshold').value = data.threshold;
+            }
+        }
+
+        async function saveWatchWords() {
+            const text = document.getElementById('watch_words').value;
+
+            let response = await fetch('/save_watch_words', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `text=${encodeURIComponent(text)}`
+            });
+
+            let data = await response.json();
+
+            if (data.error) {
+                document.getElementById('message').innerText = data.error;
+            } else {
+                document.getElementById('message').innerText = 'Watch Words saved successfully.';
+                
+                // Reload the content of the watch_words textarea
+                response = await fetch('/load_watch_words');
+                data = await response.json();
+                if (data.error) {
+                    document.getElementById('message').innerText = data.error;
+                } else {
+                    document.getElementById('watch_words').value = data.data;
+                }
+            }
+        }
+
+        async function saveOptions() {
+            const location = document.getElementById('location').value;
+            const threshold = document.getElementById('threshold').value;
+
+            let response = await fetch('/save_options', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `location=${encodeURIComponent(location)}&threshold=${encodeURIComponent(threshold)}`
+            });
+
+            let data = await response.json();
+
+            if (data.error) {
+                document.getElementById('message').innerText = data.error;
+            } else {
+                document.getElementById('message').innerText = 'Options saved successfully.';
+
+                // Reload the content of the location and threshold inputs
+                response = await fetch('/load_options');
+                data = await response.json();
+                if (data.error) {
+                    document.getElementById('message').innerText = data.error;
+                } else {
+                    document.getElementById('location').value = data.location;
+                    document.getElementById('threshold').value = data.threshold;
+                }
+            }
+        }
+
+        async function runReboot() {
+            const response = await fetch('/reboot');
+            const data = await response.json();
+
+            if (data.error) {
+                document.getElementById('message').innerText = data.error;
+            }
+        }
+
+        async function runPatch() {
+            const response = await fetch('/patch');
+            const data = await response.json();
+
+            if (data.error) {
+                document.getElementById('message').innerText = data.error;
+            } else {
+                document.getElementById('message').innerText = data.message;
+            }
+        }
+
+        async function refreshImage() {
+                var img = document.getElementById('screenshot');
+                var src = "/screenshot?" + new Date().getTime();
+                img.src = src;
+        }
+
+    </script>
+    <style>
+
+        body {
+            font-family: 'DejaVu Sans Mono', monospace;
+            font-size: small;
+            width: 240px;
+            background-color: #000;
+            color: #fff;
+            margin-left: 4px;
+        }
+
+        div {
+            border: 1px solid #fff;
+            border-radius: 3%;
+            padding: 8px;
+            margin-top: 0px;
+            margin-bottom: 8px;
+        }
+
+        label {
+            font-style: italic;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 4px 8px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #fff;
+            box-sizing: border-box;
+            background-color: #000;
+            color: #fff;
+            resize: none;
+        }
+
+        button {
+            background-color: #888;
+            color: #000;
+            padding: 8px 8px;
+            margin: 8px 0;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #fff;
+        }
+
+        button:active {
+            background-color: #555;
+            color: #fff;
+        }
+
+        button:disabled {
+            background-color: #333;
+            color: #999;
+            cursor: default;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="message" style="font-size:smaller;border-radius: 0px; margin-top: 0px;">{{status}}</div>
+
+    <div style="font-size: xx-small; text-align: center; border: 2px solid #fff; border-radius: 0px;" onclick="refreshImage()">
+        <img id="screenshot" src="/screenshot?{{ss_ts}}" alt="Recent screenshot" style="vertical-align: middle; width: 220px; margin-bottom: 4px;">
+        Click the image to refresh.<br/>
+        <a href="/stream">Live stream</a>
+    </div>
+
+    <div id="watch-words">
+        <label for="watch_words">Watch Words: </label>
+        <textarea id="watch_words" rows="24" cols="70"></textarea>
+        <button onclick="saveWatchWords();">Update Watch Words</button>
+    </div>
+
+    <div id="options">
+        <label for="location">wttr.in locale: </label><input id="location" type="text" placeholder="Enter location" style="width:96px;">
+        <br/>
+        <label for="threshold">LTC/BTC threshold: </label><input id="threshold" type="text" placeholder="Enter threshold" style="width:64px;">
+        <button onclick="saveOptions();">Update Options</button>
+    </div>
+
+    <div id="controls" style="border-radius: 0; border-style: dashed; margin-top: 16px;">
+        <button onclick="runPatch()">Patch (update) software</button>
+        <hr/>
+        <button onclick="runReboot()">Reboot</button>
+    </div>
+
+    <script>loadWatchWords(); loadOptions();</script>
+
+</body>
+</html>
