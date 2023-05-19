@@ -12,6 +12,7 @@ Designed with high-visibility and at-a-glance updates in mind.  Intended for 220
 
 **&lt;ESC&gt;** to exit
 
+*Please note: As of v1.1.0 a local web service is launched on port 5000 to allow some basic web management. See <b>options.py</b>.*
 
 ### From left to right from top to bottom:
 - Time, Date, BTC/USD Spot
