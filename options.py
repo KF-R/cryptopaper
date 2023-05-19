@@ -29,9 +29,6 @@ def sanitize_threshold(s):
 def is_raspberry_pi():
     return any('BCM' in line for line in open('/proc/cpuinfo'))
 
-def days_since_last_apt_upgrade():
-    return (datetime.now() - datetime.fromtimestamp(os.path.getmtime('/var/log/dpkg.log'))).days
-
 @app.after_request
 def add_header(response):
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
@@ -44,7 +41,7 @@ def home():
     system_name = os.uname().nodename
     current_time = datetime.now().strftime('%y-%m-%d %H:%M:%S')
     update_disabled = '' if is_raspberry_pi() else ' disabled'
-    return render_template('index.html', status = f'{system_name} :: {current_time}', ss_ts = datetime.now().second, update_disabled = update_disabled, days = days_since_last_apt_upgrade())
+    return render_template('index.html', status = f'{system_name} :: {current_time}', ss_ts = datetime.now().second, update_disabled = update_disabled)
 
 @app.route('/load_watch_words', methods=['GET'])
 def load_watch_words():
@@ -52,7 +49,7 @@ def load_watch_words():
         with open(WATCH_WORDS_FILE, 'r') as file:
             data = file.read()
         return {'data': data}
-    except: return {'error': 'An error occurred while loading the w file.'}
+    except: return {'error': 'An error occurred while loading the watch-words file.'}
 
 @app.route('/load_options', methods=['GET'])
 def load_options():
@@ -62,7 +59,7 @@ def load_options():
             threshold = lines[0].strip() if len(lines) > 0 else ""
             location = lines[1].strip() if len(lines) > 1 else ""
         return {'location': location, 'threshold': threshold}
-    except error as e: return {'error': 'An error occurred while loading the o file.' + str(e)}
+    except error as e: return {'error': 'An error occurred while loading the options file.' + str(e)}
 
 @app.route('/save_watch_words', methods=['POST'])
 def save_watch_words():
@@ -71,7 +68,7 @@ def save_watch_words():
         with open(WATCH_WORDS_FILE, 'w') as file:
             file.write(text)
         return {'message': 'File saved successfully.'}
-    except: return {'error': 'An error occurred while saving the file.'}
+    except: return {'error': 'An error occurred while saving the watch-words file.'}
 
 @app.route('/save_options', methods=['POST'])
 def save_options():
@@ -81,7 +78,7 @@ def save_options():
         with open(OPTIONS_FILE, 'w') as file:
             file.write(threshold + '\n' + location)
         return {'message': 'File saved successfully.'}
-    except: return {'error': 'An error occurred while saving the file.'}
+    except: return {'error': 'An error occurred while saving the options file.'}
 
 @app.route('/reboot', methods=['GET'])
 def run_reboot():
