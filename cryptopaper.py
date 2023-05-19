@@ -4,11 +4,11 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame, asyncio, aiohttp, json, threading
 from aiohttp import ClientTimeout
-import datetime, time, math, socket, urllib, string, io, sys
+import datetime, time, math, socket, urllib, string, io, sys, subprocess
 from bs4 import BeautifulSoup
  
 LIBDIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
-TITLE, VERSION = 'Cryptopaper', 'v1.0.5'
+TITLE, VERSION = 'Cryptopaper', 'v1.1.0'
 
 WIN_W, WIN_H, CHART_TOP, CHART_BOTTOM = 2200, 1650, 450, 1450
 CHART_HEIGHT = CHART_BOTTOM - CHART_TOP
@@ -38,6 +38,7 @@ except: RESCALE_RESOLUTION = (WIN_W, WIN_H)
 pygame.init()
 rendered_display = pygame.display.set_mode( RESCALE_RESOLUTION, pygame.NOFRAME | pygame.DOUBLEBUF | pygame.HWSURFACE, 8 )
 pygame.display.set_caption(TITLE + ' ' + VERSION)
+pygame.mouse.set_visible(False)
 clock = pygame.time.Clock()
 display = pygame.Surface((WIN_W, WIN_H))
 
@@ -457,7 +458,10 @@ if __name__ == "__main__":
     orc_figures = fetch_orc_stats(WAR_DAYS, TIMEOUT*2)
     
     if RESCALE_RESOLUTION != (WIN_W, WIN_H): notice('Rescaling',str(RESCALE_RESOLUTION))
-    
+
+    notice(TITLE, 'Launching options service...')
+    p = subprocess.Popen(['python','options.py'])
+        
     notice(TITLE, 'Started')
     loop = asyncio.new_event_loop()
     stop_event = threading.Event()
