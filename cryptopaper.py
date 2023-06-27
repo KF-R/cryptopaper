@@ -4,12 +4,12 @@ import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame, asyncio, aiohttp, json, threading
 from aiohttp import ClientTimeout
-import datetime, time, math, socket, urllib, string, io, sys, subprocess
+import datetime, time, math, socket, urllib, string, io, sys, subprocess, qrcode
 from bs4 import BeautifulSoup
  
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 LIBDIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
-TITLE, VERSION = 'Cryptopaper', 'v1.1.1'
+TITLE, VERSION = 'Cryptopaper', 'v1.2.0'
 
 WIN_W, WIN_H, CHART_TOP, CHART_BOTTOM = 2200, 1650, 450, 1450
 CHART_HEIGHT = CHART_BOTTOM - CHART_TOP
@@ -19,6 +19,7 @@ VI_RADIUS, VI_RATIO = 100.0, 10 # Volatility indicator
 VI_CENTER = WIN_W // 2, WIN_H - VI_RADIUS 
 T_START, TIMEOUT, FPS = int(time.time()) // 60, 1.0, 30
 candles, news, font_cache, ip_addr, weather, btc_usd_spot, ltc_btc_rate = [], [], {}, '', '', 0, 0
+PORT, QR_countdown_timer, QR_TIMEOUT = 5000, 0, 30
 
 BADGE = pygame.image.load(os.path.join(LIBDIR,'tryzub-100.png'))
 FONT_PATH = os.path.join(LIBDIR,"Code New Roman.otf")
@@ -312,14 +313,25 @@ def draw_war_stats():
     print_at(display, (WAR_DAYS * CHART_COL_W) + 200, CHART_BOTTOM + 102, "Day", 36)
     draw_equipment_losses(display, 20, CHART_BOTTOM + 6)
 
+def generate_qr_code(url, size: int = 12):
+    qr = qrcode.QRCode(
+        version = 1,
+        error_correction = qrcode.constants.ERROR_CORRECT_H,
+        box_size = size,
+        border = 4,
+    )
+    qr.add_data(url)
+    qr.make(fit = True)
+    img = qr.make_image(fill = BLACK, back_color = white)
+    img.save('qrcode.png')
+
 # Pygame main loop
 def pygame_loop(stop_event):
-    global news, candles, orc_figures, white, last_update_day, last_update_hour, weather
+    global news, candles, orc_figures, white, last_update_day, last_update_hour, weather, QR_countdown_timer
     # Setup
     ps = int(time.time())-1
     previous_minute = 0
     previous_tick = (int(time.time()) // SECS_PER_CANDLE) - 1
-    ip_addr = ip_address()
     running = True
     while running:
         if (ps == int(time.time())):
@@ -332,10 +344,12 @@ def pygame_loop(stop_event):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
-                elif (event.key == pygame.K_UP): # Contrast adjustments
+                elif (event.key == pygame.K_UP): # Contrast adjustment
                     if white[0] < 255:  white = ( white[0] + 20, white[0] + 20, white[0] + 20)
-                elif (event.key == pygame.K_DOWN):
+                elif (event.key == pygame.K_DOWN): # Contrast adjustments
                     if white[0] > MIN_CONTRAST: white = ( white[0] - 20, white[0] - 20, white[0] - 20)
+                elif (event.key == pygame.K_SPACE): # Show options page QR code
+                    QR_countdown_timer = QR_TIMEOUT
 
         display.fill(white)
         
@@ -414,6 +428,13 @@ def pygame_loop(stop_event):
         # Show badge
         display_image(display, BADGE, 881, CHART_BOTTOM + 16, 0.6)
 
+        # Show QR code for Options page if recently invoked
+        if QR_countdown_timer > 0:
+            display_image(display, QR_image, WIN_W // 2 - 222, WIN_H // 2 - 222)
+            QR_countdown_timer -= 1
+            print_at(display, WIN_W // 2 - 222, WIN_H // 2 - 222, f'http://{ip_addr}:{PORT}', 32)
+            print_at(display, WIN_W // 2 - 24, WIN_H // 2 + 200, f'{QR_countdown_timer}s', 24)
+
         # Render scaled frame
         if(RESCALE_RESOLUTION != (WIN_W, WIN_H)): 
             rescaled_display = pygame.transform.smoothscale(display, RESCALE_RESOLUTION)
@@ -448,6 +469,7 @@ if __name__ == "__main__":
     except:
         notice('WARNING',"Watch word list is missing. \nYou are seeing this error because there's a problem with your {(os.path.join(LIBDIR,'watch-words.txt'))} file. Ensure that it exists, is readable and has some newline-separated watch words in it.")
         WATCH_LIST = ['breaking', 'shot', 'troop', 'explo', 'nuclear', 'chemical', 'Putin', 'killed', 'Moscow']
+ 
     btc_usd_spot = get_btc_spot_once(BTC_INTERVAL)
     while btc_usd_spot == 0:
         notice(TITLE, 'Please wait...')
@@ -457,12 +479,15 @@ if __name__ == "__main__":
     weather = fetch_weather()
     last_update_hour = int(time.strftime('%H'))
     orc_figures = fetch_orc_stats(WAR_DAYS, TIMEOUT*2)
+    ip_addr = ip_address()
+    generate_qr_code(f'http://{ip_addr}:{PORT}')
+    QR_image = pygame.image.load('qrcode.png')
     
     if RESCALE_RESOLUTION != (WIN_W, WIN_H): notice('Rescaling',str(RESCALE_RESOLUTION))
 
-    notice(TITLE, 'Launching options service...')
+    notice(TITLE, 'Launching options service at ' + f'http://{ip_addr}:{PORT}' + ' ...')
     p = subprocess.Popen(['python','options.py'])
-        
+
     notice(TITLE, 'Started')
     loop = asyncio.new_event_loop()
     stop_event = threading.Event()
