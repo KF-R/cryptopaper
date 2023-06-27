@@ -9,6 +9,7 @@ import os, re, subprocess
 LIBDIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
 OPTIONS_FILE = os.path.join(LIBDIR, 'options.txt')
 WATCH_WORDS_FILE = os.path.join(LIBDIR, 'watch-words.txt')
+PORT = 5000
 
 app = Flask(__name__, template_folder='lib')
 CORS(app)
@@ -130,6 +131,6 @@ def stream():
     
 if __name__ == '__main__':
     if WSGI:
-        serve(app, host="0.0.0.0", port=5000)
+        serve(app, host="0.0.0.0", port = PORT)
     else: 
-        app.run(host = "0.0.0.0", port=5000)
+        app.run(host = "0.0.0.0", port = PORT)
