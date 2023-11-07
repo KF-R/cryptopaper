@@ -161,7 +161,7 @@ def fetch_bbc_news(headline_count=4, timeout=TIMEOUT):
     except:
         return(['', '', '  No headlines found'])
     soup = BeautifulSoup(data, 'html.parser')
-    headlines = soup.find('body').find_all('h3')
+    headlines = soup.find('body').find_all('h2')
 
     for i in range(len(headlines)):
         if headlines[i].text.strip() not in results: results.append(f'{headlines[i].text.strip()}')
